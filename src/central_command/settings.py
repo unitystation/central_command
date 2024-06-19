@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "post_office",
     "accounts",
     "persistence",
+    "server",
     "drf_spectacular",
 ]
 
@@ -151,6 +152,18 @@ DATABASES = {
         "PASSWORD": os.environ.get("DB_PASSWORD", ""),
         "HOST": os.environ.get("DB_HOST", "localhost"),
         "PORT": os.environ.get("DB_PORT", "5432"),
+    }
+}
+
+REDIS_LOCATION = f"redis://{os.environ.get('REDIS_HOST')}:6379/1"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_LOCATION,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
     }
 }
 
