@@ -15,44 +15,60 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
-            - uses: actions/setup-python@v4
+            - uses: astral-sh/setup-uv@v3
               with:
-                  python-version: '3.12'
-            # because pre-commit uses external mypy
-            - name: install mypy
-              run: |
-                  pip install poetry
-                  poetry config virtualenvs.create false
-                  poetry install --only main,typecheck
+                version: "0.4.24"
+                enable-cache: true
+
+            - name: pre-commit cache key
+              run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
+
+            - uses: actions/cache@v4
+              with:
+                  path: ~/.cache/pre-commit
+                  key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
+
+            - name: Install Python
+              run: uv python install
+
+            - name: install dependencies
+              run: uv sync
+
             # https://github.com/typeddjango/django-stubs/issues/458
             - name: create .env file
               run: cp example.env .env
-            - uses: pre-commit/action@v3.0.0
+
+            - name: pre-commit
+              run: uv run pre-commit run --all-files
 
     unit_test:
         needs: [ lint ]
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
-            - uses: actions/setup-python@v4
+            - uses: astral-sh/setup-uv@v3
               with:
-                  python-version: '3.12'
-            - name: Install dependencies
-              run: |
-                  pip install poetry
-                  poetry config virtualenvs.create false
-                  poetry install --only main
+                version: "0.4.24"
+                enable-cache: true
+
+            - name: Set up Python
+              run: uv python install
+
+            - name: install dependencies
+              run: uv sync
+
             - name: create .env file
               run: cp example.env .env
+
             - name: Run tests
               env:
                   SECRET_KEY: secret
                   DB_ENGINE: django.db.backends.sqlite3
               run: |
                   cd src
-                  python manage.py makemigrations --check
-                  python manage.py migrate
-                  python manage.py test tests/
+                  uv run manage.py makemigrations --check
+                  uv run manage.py migrate
+                  uv run manage.py test tests/
 
     docker:
         needs: [ lint, unit_test ]

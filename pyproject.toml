@@ -1,34 +1,37 @@
-[tool.poetry]
+[project]
 name = "central-command"
 version = "0.1.0"
-description = "All-in-one backend application for Unitystation"
-authors = ["Andrés Riquelme <andresfranco.rs@gmail.com>"]
+requires-python = "==3.12.*"
 
-[tool.poetry.dependencies]
-python = "^3.12"
-Django = "^3.2.12"
-djangorestframework = "^3.12.1"
-psycopg2-binary = "2.9.9"
-django-rest-knox = "^4.1.0"
-gunicorn = "^20.1.0"
-python-dotenv = "^0.19.2"
-whitenoise = "^6.2.0"
-django-post-office = "^3.8.0"
-drf-spectacular = "^0.27.1"
-
-[tool.poetry.group.lint.dependencies]
-pre-commit = "4.0.1"
-ruff = "0.6.9"
-
-# typecheck is separate for CI
-[tool.poetry.group.typecheck.dependencies]
-mypy = "1.*"
-django-stubs = {extras = ["compatible-mypy"], version = "4.*"}
-djangorestframework-stubs = {extras = ["compatible-mypy"], version = "3.*"}
+dependencies = [
+    "Django~=3.2.24",
+    "django-post-office~=3.8.0",
+    "djangorestframework~=3.14.0",
+    "django-rest-knox~=4.2.0",
+    "drf-spectacular~=0.27.1",
+    "gunicorn~=20.1.0",
+    "psycopg2-binary~=2.9.9",
+    "python-dotenv~=0.19.2",
+    "whitenoise~=6.6.0",
+]
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/central_command"]
+
+[tool.uv]
+dev-dependencies = [
+    "pre-commit~=4.0",
+    "ruff~=0.7",
+    "mypy>=1.7.1",
+    # TODO: bump django and stubs. these stubs seem to be incompatible with django 3.2
+    # https://github.com/typeddjango/django-stubs/tree/master?tab=readme-ov-file#version-compatibility
+    "django-stubs[compatible-mypy]==4.2.7",
+    "djangorestframework-stubs[compatible-mypy]==3.14.5",
+]
 
 [tool.ruff]
 exclude = ["migrations"]

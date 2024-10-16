@@ -24,7 +24,7 @@ Copy `example.env` to `.env` and customize it. You can then start development by
 You will need python 3.12+
 
 <details>
-<summary>Extra steps if don't want to install poetry globally for some reason</summary>
+<summary>Extra steps if don't want to install uv globally for some reason</summary>
 
 #### Install venv (only first time or after updating sytem python version)
 
@@ -48,21 +48,22 @@ python -m venv .venv
 
 #### Dependency installation
 
-Install poetry to manage dependencies and update pip
+Install uv to manage dependencies
 
 ```sh
-pip install -U pip poetry
+pip install -U pip uv
 ```
 
 Install dev dependencies
 
 ```sh
-poetry install
+uv sync
 ```
 
 #### Start the server
 
 from the src folder run
+
 ```sh
 python manage.py runserver
 ```

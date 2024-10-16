@@ -1,27 +1,19 @@
 FROM python:3.12-alpine3.20
 
-# in order:
-# proper stdout flushing for alpine
-# no .pyc files
-# do not store pip cache
-# do not check pip version
-# do not yell about root user
 ENV PYTHONUNBUFFERED=yes \
     PYTHONDONTWRITEBYTECODE=yes \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_ROOT_USER_ACTION=ignore
+    UV_LINK_MODE=copy
 
 WORKDIR /src
 
-COPY poetry.lock pyproject.toml ./
-
-RUN : \
+RUN --mount=from=ghcr.io/astral-sh/uv:0.4.24,source=/uv,target=/bin/uv \
+    --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     # psycopg runtime dep
-    && apk add --no-cache libpq \
-    && pip install poetry \
-    && poetry config virtualenvs.create false \
-    && poetry install --only main
+    apk add --no-cache libpq \
+    # export requirements from uv.lock since uv does not support sync withour venv
+    && uv export --frozen --format requirements-txt --no-dev --quiet | uv pip install --system -r -
 
 COPY src .
 
